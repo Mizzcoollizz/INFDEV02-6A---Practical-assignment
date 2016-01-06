@@ -39,14 +39,10 @@ namespace EntryPoint
 
     private static IEnumerable<Vector2> SortSpecialBuildingsByDistance(Vector2 house, IEnumerable<Vector2> specialBuildings)
     {
-
             return MergeSort(specialBuildings.ToArray(), 0, specialBuildings.Count() - 1, house);
-
-          
         }
 
         private static Vector2[] MergeSort(Vector2[] list, int startPoint, int endPoint, Vector2 house) {
-
          
             if (startPoint < endPoint) {
                 int splitPoint = (startPoint + endPoint) / 2;
@@ -62,8 +58,7 @@ namespace EntryPoint
                 for (int i = splitPoint + 1; i <= endPoint; i++) {
                     listB.Add(list.ElementAt(i));
                 }
-                //Sort the lists
-                
+                //Sort the lists            
                 
                 for(int i = startPoint; i <= endPoint; i++)
                 {
@@ -118,15 +113,51 @@ namespace EntryPoint
       IEnumerable<Vector2> specialBuildings, 
       IEnumerable<Tuple<Vector2, float>> housesAndDistances)
     {
-      return
-          from h in housesAndDistances
-          select
-            from s in specialBuildings
-            where Vector2.Distance(h.Item1, s) <= h.Item2
-            select s;
-    }
+            //Make the fist specialBuilding the root, with X as the type
+            SpecialBuildingTreeNode root = new SpecialBuildingTreeNode("X", specialBuildings.First());
+            for (int i = 1; i < specialBuildings.Count(); i++)
+            {
 
-    private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute(Vector2 startingBuilding, 
+                Vector2 currentBuilding = specialBuildings.ElementAt(i);
+                root.insertNewBuilding(currentBuilding);
+            }
+
+            List<List<Vector2>> returnList = new List<List<Vector2>>();
+
+
+
+            for (int i = 0; i < housesAndDistances.Count(); i++)
+            {
+                Tuple<Vector2, float> houseAndDistance = housesAndDistances.ElementAt(i);
+                List<Vector2> buildings = new List<Vector2>();
+                root.compare(buildings, houseAndDistance.Item1, houseAndDistance.Item2);
+                returnList.Insert(i, buildings);
+
+                System.Diagnostics.Debug.Print("i: " + i);
+                foreach (Vector2 item in buildings)
+                {
+
+                    System.Diagnostics.Debug.Print("Item: " + item);
+
+                }
+
+            }
+
+
+            return returnList;
+
+
+
+
+            //  return
+            //from h in housesAndDistances
+            //select
+            //  from s in specialBuildings
+            //  where Vector2.Distance(h.Item1, s) <= h.Item2
+            //  select s;
+        }
+
+        private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute(Vector2 startingBuilding, 
       Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
     {
       var startingRoad = roads.Where(x => x.Item1.Equals(startingBuilding)).First();
