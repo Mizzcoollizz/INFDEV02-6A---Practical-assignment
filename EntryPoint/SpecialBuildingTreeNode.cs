@@ -54,75 +54,76 @@ namespace EntryPoint
             return this.building.Y;
         }
 
-        public void insertNewBuilding(Vector2 newBuilding)
-        {
-            
+        public void insertNewBuilding(Vector2 newBuilding) {
+            if (this.getComparisonType().Equals("X")) {
 
-            if (this.getComparisonType().Equals("X"))
-            {
-                if (newBuilding.X <= this.getBuildingX())
+                if (newBuilding.X < this.getBuildingX())
                 {
-                    if (this.getLeftChild() != null)
+                    if (this.getLeftChild() == null)
                     {
-                        this.getLeftChild().insertNewBuilding(newBuilding);
+                        this.setLeftChild(new SpecialBuildingTreeNode("Y", newBuilding));
                     }
                     else {
-                        this.setLeftChild(new SpecialBuildingTreeNode("Y", newBuilding));
-
+                        this.getLeftChild().insertNewBuilding(newBuilding);
                     }
                 }
                 else {
-                    if (this.getRightChild() != null)
+                    if (this.getRightChild() == null)
                     {
-                        this.getRightChild().insertNewBuilding(newBuilding);
-                    }
-                    else {
                         this.setRightChild(new SpecialBuildingTreeNode("Y", newBuilding));
                     }
+                    else {
+                        this.getRightChild().insertNewBuilding(newBuilding);
+                    }
+
                 }
-            }
-            else if (this.getComparisonType().Equals("Y")) {
-                if (newBuilding.Y <= this.getBuildingY())
+                
+            } else if (this.getComparisonType().Equals("Y")){
+                if (newBuilding.Y < this.getBuildingY())
                 {
-                    if (this.getLeftChild() != null)
+                    if (this.getLeftChild() == null)
                     {
-                        this.getLeftChild().insertNewBuilding(newBuilding);
+                        this.setLeftChild(new SpecialBuildingTreeNode("X", newBuilding));
                     }
                     else {
-                        this.setLeftChild(new SpecialBuildingTreeNode("X", newBuilding));
+                        this.getLeftChild().insertNewBuilding(newBuilding);
                     }
                 }
                 else {
-                    if (this.getRightChild() != null)
+                    if (this.getRightChild() == null)
                     {
-                        this.getRightChild().insertNewBuilding(newBuilding);
-                    }
-                    else {
                         this.setRightChild(new SpecialBuildingTreeNode("X", newBuilding));
                     }
+                    else {
+                        this.getRightChild().insertNewBuilding(newBuilding);
+                    }
                 }
+                
             }
+            
         }
 
         public void compare(List<Vector2> list, Vector2 house, float distance) {
 
-            IEnumerable<int> xRange = Enumerable.Range((int) house.X - (int) distance, (int) house.X + (int) distance);
-            IEnumerable<int> yRange = Enumerable.Range((int) house.Y - (int) distance, (int) house.Y + (int) distance);
+            float xLeftRangeBorder = house.X - distance;
+            float xRightRangeBorder = house.X + distance;
 
-            Boolean containsX = xRange.Contains((int) this.getBuildingX());
-            Boolean containsY = yRange.Contains((int) this.getBuildingY());
+            float yLeftRangeBorder = house.Y - distance;
+            float yRightRangeBorder = house.Y + distance;
 
+            Boolean containsX = this.getBuildingX() >= xLeftRangeBorder && this.getBuildingX() <= xRightRangeBorder;
+            Boolean containsY = this.getBuildingY() >= yLeftRangeBorder && this.getBuildingY() <= yRightRangeBorder;
+
+            //If the building in the X and Y range, we should check if it is in the building range
             if (containsX && containsY) {
-                //Do extra check using Vector.Distance()
+                //We do this using Vector.Distance
                 if (Vector2.Distance(house, this.building) <= distance) {
-                    list.Add(this.building);
+                    list.Add(building);
                 }
             }
 
-            if (this.getComparisonType().Equals("X"))
-            {
-                if (containsX)
-                {
+            if (this.getComparisonType().Equals("X")) {
+                if (containsX) {
                     if (this.getLeftChild() != null)
                     {
                         this.getLeftChild().compare(list, house, distance);
@@ -132,25 +133,23 @@ namespace EntryPoint
                         this.getRightChild().compare(list, house, distance);
                     }
                 }
-                else {
-                    if (house.X <= this.getBuildingX())
+
+                if (getBuildingX() <= xLeftRangeBorder) {
+                    if (this.getRightChild() != null)
                     {
-                        if (this.getLeftChild() != null)
-                        {
-                            this.getLeftChild().compare(list, house, distance);
-                        }
+                        this.getRightChild().compare(list, house, distance);
                     }
-                    else if (house.X > this.getBuildingX())
+                }
+
+                if (getBuildingX() >= xRightRangeBorder)
+                {
+                    if (this.getLeftChild() != null)
                     {
-                        if(this.getRightChild() != null)
-                        {
-                            this.getRightChild().compare(list, house, distance);
-                        }
+                        this.getLeftChild().compare(list, house, distance);
                     }
-                } 
-            }
-            else if (this.getComparisonType().Equals("Y"))
-            {
+                }
+
+            } else if (this.getComparisonType().Equals("Y")) {
                 if (containsY)
                 {
                     if (this.getLeftChild() != null)
@@ -162,23 +161,37 @@ namespace EntryPoint
                         this.getRightChild().compare(list, house, distance);
                     }
                 }
-                else {
-                    if (house.Y <= this.getBuildingY())
+                if (this.getBuildingY() <= yLeftRangeBorder) {
+                    if (this.getRightChild() != null)
                     {
-                        if (this.getLeftChild() != null)
-                        {
-                            this.getLeftChild().compare(list, house, distance);
-                        }
+                        this.getRightChild().compare(list, house, distance);
                     }
-                    else if (house.Y > this.getBuildingY())
+                }
+
+                if (this.getBuildingY() >= yRightRangeBorder) {
+                    if (this.getLeftChild() != null)
                     {
-                        if (this.getRightChild() != null)
-                        {
-                            this.getRightChild().compare(list, house, distance);
-                        }
+                        this.getLeftChild().compare(list, house, distance);
                     }
                 }
             }
-        }        
+            
+        }
+
+        public void checkTree(List<Vector2> list)
+        {
+            list.Add(this.building);
+            if (this.getLeftChild() != null) {
+                this.getLeftChild().checkTree(list);
+            }
+            if (this.getRightChild() != null)
+            {
+                this.getRightChild().checkTree(list);
+            }
+        }
+
+    
+
+
     }
 }
